@@ -8,8 +8,13 @@ pipeline {
         DEPLOY_SERVER = "user@your-server.com"  
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
-
-
+      tages {  
+        stage('Checkout') {
+            steps {
+                // Checkout the code from your Git repository
+                git 'https://github.com/sibilucky/jenkinsdocker.git'
+            }
+}
         stage('Build Docker Image') {
             steps {
                 script {
