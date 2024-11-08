@@ -9,13 +9,6 @@ pipeline {
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-    stages {  
-        stage('Checkout') {
-            steps {
-                // Checkout the code from your Git repository
-                git 'https://github.com/sibilucky/jenkinsdocker.git'
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
