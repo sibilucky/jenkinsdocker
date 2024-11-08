@@ -9,13 +9,17 @@ pipeline {
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-    stages {  
-        stage('Checkout Code') {
-            steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'demo', url: 'https://github.com/sibilucky/jenkinsdocker.git']])
-            }
+   stage('Checkout Code') {
+    steps {
+        script {
+            sh 'echo "Checking connectivity to GitHub"'
+            sh 'ping -c 4 github.com || curl -v https://github.com'
+            checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'demo', url: 'https://github.com/sibilucky/jenkinsdocker.git']])
         }
+    }
+}
 
+   
         stage('Build Docker Image') {
             steps {
                 script {
