@@ -10,7 +10,7 @@ pipeline {
     }
 
     stages {  
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 // Checkout the code from your Git repository
                 git 'https://github.com/sibilucky/jenkinsdocker.git'
