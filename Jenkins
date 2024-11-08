@@ -12,8 +12,7 @@ pipeline {
     stages {  
         stage('Checkout Code') {
             steps {
-                // Checkout the code from your Git repository
-                git 'https://github.com/sibilucky/jenkinsdocker.git'
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'demo', url: 'https://github.com/sibilucky/jenkinsdocker.git']])
             }
         }
 
