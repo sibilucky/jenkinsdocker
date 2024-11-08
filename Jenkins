@@ -3,13 +3,13 @@ pipeline {
     
     environment {
         DOCKER_IMAGE = "my-app"
-        REGISTRY = "docker.io"  // If you're using Docker Hub
-        REGISTRY_CREDENTIALS = "docker-credentials-id"  // Jenkins credentials for Docker login
-        DEPLOY_SERVER = "user@your-server.com"  // Replace with your server's SSH login
+        REGISTRY = "docker.io"  
+        REGISTRY_CREDENTIALS = "docker-credentials-id"  
+        DEPLOY_SERVER = "user@your-server.com"  
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-    stages {  // This is the correct place to define all the stage blocks
+    stages {  
         stage('Checkout Code') {
             steps {
                 // Checkout the code from your Git repository
