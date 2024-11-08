@@ -9,13 +9,12 @@ pipeline {
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                // Checkout the code from your Git repository
-                git 'https://github.com/sibilucky/dockerjenkins-.git'
-            }
-        }
+    stage('Checkout Code') {
+    steps {
+        // Specify the correct branch name (e.g., "main")
+        git branch: 'main', url: 'https://github.com/sibilucky/dockerjenkins-.git'
+    }
+}
 
         stage('Build Docker Image') {
             steps {
