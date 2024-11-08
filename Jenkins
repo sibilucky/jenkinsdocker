@@ -2,23 +2,21 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_IMAGE = "my-app"
+        DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"  
         REGISTRY_CREDENTIALS = "docker-credentials-id"  
         DEPLOY_SERVER = "user@your-server.com"  
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-   stage('Checkout Code') {
-    steps {
-        script {
-
-            checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'demo', url: 'https://github.com/sibilucky/jenkinsdocker.git']])
+    stages {  
+        stage('Checkout Code') {
+            steps {
+                // Checkout the code from your Git repository
+                git 'https://github.com/sibilucky/jenkinsdocker.git'
+            }
         }
-    }
-}
 
-   
         stage('Build Docker Image') {
             steps {
                 script {
@@ -76,3 +74,4 @@ pipeline {
         }
     }
 }
+
