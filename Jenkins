@@ -2,19 +2,20 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_IMAGE = "my-alpine-web-server"
-        REGISTRY = "docker.io" 
-        REGISTRY_CREDENTIALS = "docker-credentials-id"  
-        DEPLOY_SERVER = "user@your-server.com"  
+        DOCKER_IMAGE = "my-app"
+        REGISTRY = "docker.io"  // If you're using Docker Hub
+        REGISTRY_CREDENTIALS = "docker-credentials-id"  // Jenkins credentials for Docker login
+        DEPLOY_SERVER = "user@your-server.com"  // Replace with your server's SSH login
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-    stage('Checkout Code') {
-    steps {
-        // Specify the correct branch name (e.g., "main")
-        git branch: 'main', url: 'https://github.com/sibilucky/dockerjenkins-.git'
-    }
-}
+    stages {  // This is the correct place to define all the stage blocks
+        stage('Checkout Code') {
+            steps {
+                // Checkout the code from your Git repository
+                git 'https://github.com/sibilucky/jenkinsdocker.git'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -43,9 +44,8 @@ pipeline {
                     }
 
                     // Tag and push the Docker image
-                    def tag = "v${BUILD_NUMBER}"
-                    sh "docker tag my-alpine-web-server sibisam2301/my-alpine-web-server:${tag}"
-                    sh "docker push sibisam2301/my-alpine-web-server:${tag}"
+                    sh 'docker tag my-alpine-web-server sibisam2301/my-alpine-web-server:latest'
+                    sh 'docker push sibisam2301/my-alpine-web-server:latest'
                 }
             }
         }
@@ -73,4 +73,4 @@ pipeline {
             sh 'docker system prune -f'
         }
     }
-
+}
