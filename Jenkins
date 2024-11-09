@@ -21,7 +21,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                    sh 'docker build -t my-alpine-web-server .'
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
         stage('Run Docker Container for Testing') {
             steps {
                 script {
-                    sh 'docker run -d -p 8080:80 ${DOCKER_IMAGE}'
+                    sh 'docker run -d -p 8080:80 my-alpine-web-server'
                 }
             }
         }
@@ -40,8 +40,8 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS docker.io'
                     }
-                    sh 'docker tag ${DOCKER_IMAGE} docker.io/sibisam2301/${DOCKER_IMAGE}:latest'
-                    sh 'docker push docker.io/sibisam2301/${DOCKER_IMAGE}:latest'
+                    sh 'docker tag  my-alpine-web-serverdocker.io/sibisam2301/my-alpine-web-server:latest'
+                    sh 'docker push docker.io/sibisam2301/my-alpine-web-server:latest'
                 }
             }
         }
@@ -51,7 +51,7 @@ pipeline {
                 script {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
-                            docker pull ${REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:latest &&
+                            docker pull docker.io/sibisam2301/:my-alpine-web-server:latest &&
                             docker stop ${DOCKER_IMAGE} || true &&
                             docker rm ${DOCKER_IMAGE} || true &&
                             docker run -d --name ${DOCKER_IMAGE} -p 80:80 ${REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:latest
