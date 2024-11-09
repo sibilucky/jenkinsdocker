@@ -14,7 +14,7 @@ pipeline {
             steps {
                 checkout([$class: 'GitSCM', 
                           branches: [[name: '*/main']], 
-                          userRemoteConfigs: [[url: ''https://github.com/sibilucky/jenkinsdocker.git, credentialsId: 'my-git-credentials']]])
+                          userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git, credentialsId: 'my-git-credentials']]])
             }
         }
 
