@@ -1,4 +1,4 @@
-pipeline {
+zzpipeline {
     agent any
     
     environment {
@@ -18,23 +18,6 @@ pipeline {
             }
         }
 
-       pipeline {
-    agent any
-    
-    environment {
-        DOCKER_IMAGE = "my-alpine-web-server"
-        REGISTRY = "docker.io"  
-        REGISTRY_CREDENTIALS = "docker-credentials-id"  
-        DEPLOY_SERVER = "user@your-server.com"  
-        DEPLOY_PATH = "/path/to/deployment/directory"
-    }
-
-    stages {  
-        stage('Checkout Code') {
-            steps {
-                git 'https://github.com/sibilucky/jenkinsdocker.git'
-            }
-        }
 
         stage('Build Docker Image') {
             steps {
