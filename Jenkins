@@ -17,7 +17,7 @@ pipeline {
                 script {
                     sh "echo 'nameserver 8.8.8.8' | sudo tee -a /etc/resolv.conf"
                     retry(3) {
-                        sh 'nslookup github.com'
+                        sh 'ping github.com'
                         git 'https://github.com/sibilucky/jenkinsdocker.git'
                     }
                 }
