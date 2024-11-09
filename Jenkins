@@ -19,16 +19,19 @@ pipeline {
             }
         }
 
-        node('docker-agent') {
-    stage('Build Docker Image') {
-        steps {
-            script {
-                echo 'Building Docker image...'
-                dockerImage = docker.build("my-alpine-web-server:latest")
+       stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker image...'
+                    // Define the Docker image name as a variable
+                    def myAlpineWebServer = 'my-alpine-web-server'
+                    // Build the Docker image
+                    dockerImage = docker.build("${my-alpine-web-server}:latest")
+                }
             }
         }
     }
-}
 
 
 
