@@ -9,14 +9,14 @@ pipeline {
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-     stages {
-        stage('Checkout Code') {
-            steps {
-                checkout([$class: 'GitSCM', 
-                          branches: [[name: '*/main']], 
-                          userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git, credentialsId: 'my-git-credentials']]])
-            }
-        }
+     stage('Checkout Code') {
+    steps {
+        checkout([$class: 'GitSCM', 
+                  branches: [[name: '*/main']], 
+                  userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git', credentialsId: 'my-git-credentials']]])
+    }
+}
+
 
         stage('Build Docker Image') {
             steps {
