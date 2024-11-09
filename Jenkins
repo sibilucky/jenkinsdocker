@@ -19,7 +19,6 @@ pipeline {
             }
         }
 
-      
         stage('Build Docker Image') {
             steps {
                 script {
@@ -27,13 +26,10 @@ pipeline {
                     // Define the Docker image name as a variable
                     def myAlpineWebServer = 'my-alpine-web-server'
                     // Build the Docker image
-                    dockerImage = docker.build("${my-alpine-web-server}:latest")
+                    dockerImage = docker.build("${myAlpineWebServer}:latest")
                 }
             }
         }
-    }
-
-
 
         stage('Run Docker Container for Testing') {
             steps {
@@ -84,4 +80,4 @@ pipeline {
             sh 'docker system prune -f'
         }
     }
-
+}
