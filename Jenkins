@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
-        DOCKER_HUB_REPO = 'sibisam2301'
         DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
@@ -25,7 +24,7 @@ pipeline {
                 script {
                     echo 'Building Docker image...'
                     // Add -x for verbose output
-                  dockerImage = docker.build("${DOCKER_HUB_REPO}:latest")
+                  dockerImage = docker.build("${my-alpine-web-server}:latest")
                 }
             }
         }
@@ -34,7 +33,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8080:80 ${DOCKER_HUB_REPO}'
+                    sh 'set -x; docker run -d -p 8080:80 ${my-alpine-web-server}'
                 }
             }
         }
