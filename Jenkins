@@ -15,12 +15,12 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    echo "Cloning the Git repository..."
+                    echo "echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf"
                     retry(3) {
                         // Check if GitHub is reachable before cloning
                         sh 'nslookup github.com'
                         // Clone the code from GitHub repository
-                        git "${https://github.com/sibilucky/jenkinsdocker.git}"
+                        git 'https://github.com/sibilucky/jenkinsdocker.git'
                     }
                 }
             }
