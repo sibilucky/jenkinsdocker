@@ -1,4 +1,4 @@
-zzpipeline {
+pipeline {
     agent any
     
     environment {
@@ -7,22 +7,31 @@ zzpipeline {
         REGISTRY_CREDENTIALS = "docker-credentials-id"
         DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
+        REPOSITORY = "sibisam2301"
+        GIT_URL = "https://github.com/sibilucky/jenkinsdocker.git"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout([$class: 'GitSCM', 
-                          branches: [[name: '*/main']], 
-                          userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git', credentialsId: 'my-git-credentials']]])
+                script {
+                    echo "Cloning the Git repository..."
+                    retry(3) {
+                        // Check if GitHub is reachable before cloning
+                        sh 'nslookup github.com'
+                        // Clone the code from GitHub repository
+                        git "https://github.com/sibilucky/jenkinsdocker.git"
+                    }
+                }
             }
         }
-
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    echo "Building the Docker image..."
+                    // Build the Docker image using Dockerfile
+                    sh "docker build -t my-alpine-web-server ."
                 }
             }
         }
@@ -30,7 +39,9 @@ zzpipeline {
         stage('Run Docker Container for Testing') {
             steps {
                 script {
-                    sh "docker run -d -p 8080:80 ${DOCKER_IMAGE}"
+                    echo "Running Docker container for testing..."
+                    // Run Docker container for testing
+                    sh "docker run -d -p 8080:80 --name test-container my-alpine-web-server"
                 }
             }
         }
@@ -38,12 +49,14 @@ zzpipeline {
         stage('Push Docker Image to Registry') {
             steps {
                 script {
+                    echo "Pushing Docker image to registry..."
+                    // Log in to Docker registry using Jenkins credentials
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "docker login -u \$DOCKER_USER -p \$DOCKER_PASS ${REGISTRY}"
+                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${REGISTRY}"
                     }
-
-                    sh "docker tag ${DOCKER_IMAGE} ${REGISTRY}/${DOCKER_IMAGE}:latest"
-                    sh "docker push ${REGISTRY}/${DOCKER_IMAGE}:latest"
+                    // Tag and push the Docker image to the specified registry
+                    sh "docker tag my-alpine-web-server https://github.com/sibilucky/jenkinsdocker.git /my-alpine-web-server:latest"
+                    sh "docker push https://github.com/sibilucky/jenkinsdocker.git/:my-alpine-web-serverlatest"
                 }
             }
         }
@@ -51,13 +64,15 @@ zzpipeline {
         stage('Deploy to Server') {
             steps {
                 script {
+                    echo "Deploying Docker image to the server..."
+                    // Deploy the Docker image to a remote server
                     sshagent(credentials: ['your-ssh-credentials-id']) {
                         sh """
                             ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
-                                docker pull ${REGISTRY}/${DOCKER_IMAGE}:latest &&
+                                docker pull https://github.com/sibilucky/jenkinsdocker.git/my-alpine-web-server:latest &&
                                 docker stop my-alpine-web-server || true &&
                                 docker rm my-alpine-web-server || true &&
-                                docker run -d --name my-alpine-web-server -p 80:80 ${REGISTRY}/${DOCKER_IMAGE}:latest
+                                docker run -d --name my-alpine-web-server -p 80:80 https://github.com/sibilucky/jenkinsdocker.git/my-alpine-web-server:latest
                             "
                         """
                     }
@@ -68,7 +83,17 @@ zzpipeline {
     
     post {
         always {
-            sh 'docker system prune -f'
+            script {
+                echo "Cleaning up Docker resources..."
+                // Clean up unused Docker resources to save space
+                sh 'docker system prune -f'
+            }
+        }
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Please check the logs for errors."
         }
     }
 }
