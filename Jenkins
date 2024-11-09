@@ -24,7 +24,7 @@ pipeline {
                 script {
                     echo 'Building Docker image...'
                     // Add -x for verbose output
-                    sh 'set -x; docker build -t ${DOCKER_IMAGE} .'
+                    sh 'set -x; docker build -t ${my-alpine-web-server} .'
                 }
             }
         }
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8080:80 ${DOCKER_IMAGE}'
+                    sh 'set -x; docker run -d -p 8080:80 ${my-alpine-web-server}'
                 }
             }
         }
