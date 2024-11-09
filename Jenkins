@@ -18,10 +18,28 @@ pipeline {
             }
         }
 
+       pipeline {
+    agent any
+    
+    environment {
+        DOCKER_IMAGE = "my-alpine-web-server"
+        REGISTRY = "docker.io"  
+        REGISTRY_CREDENTIALS = "docker-credentials-id"  
+        DEPLOY_SERVER = "user@your-server.com"  
+        DEPLOY_PATH = "/path/to/deployment/directory"
+    }
+
+    stages {  
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/sibilucky/jenkinsdocker.git'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t my-alpine-web-server .'
+                    sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
         }
@@ -29,7 +47,7 @@ pipeline {
         stage('Run Docker Container for Testing') {
             steps {
                 script {
-                    sh 'docker run -d -p 8080:80 my-alpine-web-server'
+                    sh "docker run -d -p 8080:80 ${DOCKER_IMAGE}"
                 }
             }
         }
@@ -38,10 +56,11 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS docker.io'
+                        sh "docker login -u \$DOCKER_USER -p \$DOCKER_PASS ${REGISTRY}"
                     }
-                    sh 'docker tag  my-alpine-web-serverdocker.io/sibisam2301/my-alpine-web-server:latest'
-                    sh 'docker push docker.io/sibisam2301/my-alpine-web-server:latest'
+
+                    sh "docker tag ${DOCKER_IMAGE} ${REGISTRY}/${DOCKER_IMAGE}:latest"
+                    sh "docker push ${REGISTRY}/${DOCKER_IMAGE}:latest"
                 }
             }
         }
@@ -49,14 +68,16 @@ pipeline {
         stage('Deploy to Server') {
             steps {
                 script {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
-                            docker pull docker.io/sibisam2301/my-alpine-web-server:latest &&
-                            docker stop my-alpine-web-server  || true &&
-                            docker rm my-alpine-web-server || true &&
-                            docker run -d --name my-alpine-web-server -p 80:80 docker.io/sibisam2301/my-alpine-web-server:latest
-                        "
-                    """
+                    sshagent(credentials: ['your-ssh-credentials-id']) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
+                                docker pull ${REGISTRY}/${DOCKER_IMAGE}:latest &&
+                                docker stop my-alpine-web-server || true &&
+                                docker rm my-alpine-web-server || true &&
+                                docker run -d --name my-alpine-web-server -p 80:80 ${REGISTRY}/${DOCKER_IMAGE}:latest
+                            "
+                        """
+                    }
                 }
             }
         }
