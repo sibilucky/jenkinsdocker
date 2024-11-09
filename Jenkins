@@ -51,10 +51,10 @@ pipeline {
                 script {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
-                            docker pull docker.io/sibisam2301/:my-alpine-web-server:latest &&
-                            docker stop ${DOCKER_IMAGE} || true &&
-                            docker rm ${DOCKER_IMAGE} || true &&
-                            docker run -d --name ${DOCKER_IMAGE} -p 80:80 ${REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:latest
+                            docker pull docker.io/sibisam2301/my-alpine-web-server:latest &&
+                            docker stop my-alpine-web-server  || true &&
+                            docker rm my-alpine-web-server || true &&
+                            docker run -d --name my-alpine-web-server -p 80:80 docker.io/sibisam2301/my-alpine-web-server:latest
                         "
                     """
                 }
