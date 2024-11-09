@@ -21,7 +21,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t my-alpine-web-server  .'
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
         stage('Run Docker Container for Testing') {
             steps {
                 script {
-                    sh 'docker run -d -p 8080:80 my-alpine-web-server'
+                    sh 'docker run -d -p 8080:80 ${DOCKER_IMAGE}'
                 }
             }
         }
@@ -40,8 +40,8 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS docker.io'
                     }
-                    sh 'docker tag my-alpine-web-server docker.io/sibisam2301/my-alpine-web-server:latest'
-                     
+                    sh 'docker tag ${DOCKER_IMAGE} docker.io/sibisam2301/${DOCKER_IMAGE}:latest'
+                    sh 'docker push docker.io/sibisam2301/${DOCKER_IMAGE}:latest'
                 }
             }
         }
@@ -52,9 +52,9 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
                             docker pull ${REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:latest &&
-                            docker stop my-alpine-web-server || true &&
-                            docker rm my-alpine-web-server || true &&
-                            docker run -d --name my-alpine-web-server -p 80:80 ${REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:latest
+                            docker stop ${DOCKER_IMAGE} || true &&
+                            docker rm ${DOCKER_IMAGE} || true &&
+                            docker run -d --name ${DOCKER_IMAGE} -p 80:80 ${REGISTRY}/${DOCKER_USER}/${DOCKER_IMAGE}:latest
                         "
                     """
                 }
