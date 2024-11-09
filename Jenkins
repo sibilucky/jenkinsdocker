@@ -15,11 +15,9 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    echo "echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf"
+                    sh "echo 'nameserver 8.8.8.8' | sudo tee -a /etc/resolv.conf"
                     retry(3) {
-                        // Check if GitHub is reachable before cloning
                         sh 'nslookup github.com'
-                        // Clone the code from GitHub repository
                         git 'https://github.com/sibilucky/jenkinsdocker.git'
                     }
                 }
@@ -30,8 +28,7 @@ pipeline {
             steps {
                 script {
                     echo "Building the Docker image..."
-                    // Build the Docker image using Dockerfile
-                    sh "docker build -t my-alpine-web-server ."
+                    sh "docker build -t ${DOCKER_IMAGE} ."
                 }
             }
         }
@@ -40,8 +37,7 @@ pipeline {
             steps {
                 script {
                     echo "Running Docker container for testing..."
-                    // Run Docker container for testing
-                    sh "docker run -d -p 8080:80 --name test-container my-alpine-web-server"
+                    sh "docker run -d -p 8080:80 --name test-container ${DOCKER_IMAGE}"
                 }
             }
         }
@@ -50,13 +46,11 @@ pipeline {
             steps {
                 script {
                     echo "Pushing Docker image to registry..."
-                    // Log in to Docker registry using Jenkins credentials
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${REGISTRY}"
                     }
-                    // Tag and push the Docker image to the specified registry
-                    sh "docker tag my-alpine-web-server ${REGISTRY}/${REPOSITORY}/my-alpine-web-server:latest"
-                    sh "docker push ${REGISTRY}/${REPOSITORY}/my-alpine-web-server:latest"
+                    sh "docker tag ${DOCKER_IMAGE} ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest"
+                    sh "docker push ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest"
                 }
             }
         }
@@ -65,30 +59,27 @@ pipeline {
             steps {
                 script {
                     echo "Deploying Docker image to the server..."
-                    // Deploy the Docker image to a remote server
                     sshagent(credentials: ['your-ssh-credentials-id']) {
                         sh """
                             ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
-                                docker pull ${REGISTRY}/${REPOSITORY}/my-alpine-web-server:latest &&
-                                docker stop my-alpine-web-server || true &&
-                                docker rm my-alpine-web-server || true &&
-                                docker run -d --name my-alpine-web-server -p 80:80 ${REGISTRY}/${REPOSITORY}/my-alpine-web-server:latest
+                                docker pull ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest &&
+                                docker stop ${DOCKER_IMAGE} || true &&
+                                docker rm ${DOCKER_IMAGE} || true &&
+                                docker run -d --name ${DOCKER_IMAGE} -p 80:80 ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest
                             "
                         """
                     }
-                    // Check if the deployed container is up and running
                     sh "curl --max-time 30 --fail http://${DEPLOY_SERVER}:80 || exit 1"
                 }
             }
         }
     }
-    
+
     post {
         always {
             script {
                 echo "Cleaning up Docker resources..."
-                // Clean up unused Docker resources to save space
-                sh 'docker system prune -f'
+                sh 'docker system prune -f --volumes'
             }
         }
         success {
