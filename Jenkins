@@ -3,17 +3,18 @@ pipeline {
     
     environment {
         DOCKER_IMAGE = "my-alpine-web-server"
-        REGISTRY = "docker.io"  
+        REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"  
         DEPLOY_SERVER = "user@your-server.com"  
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
-    stages {  
+     stages {
         stage('Checkout Code') {
             steps {
-                // Checkout the code from your Git repository
-                git 'https://github.com/sibilucky/jenkinsdocker.git'
+                checkout([$class: 'GitSCM', 
+                          branches: [[name: '*/main']], 
+                          userRemoteConfigs: [[url: ''https://github.com/sibilucky/jenkinsdocker.git, credentialsId: 'my-git-credentials']]])
             }
         }
 
