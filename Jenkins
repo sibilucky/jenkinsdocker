@@ -1,34 +1,28 @@
 pipeline {
     agent any
-
+    
     environment {
         DOCKER_IMAGE = "my-alpine-web-server"
-        REGISTRY = "docker.io"
-        REGISTRY_CREDENTIALS = "docker-credentials-id"
-        DEPLOY_SERVER = "user@your-server.com"
+        REGISTRY = "docker.io"  
+        REGISTRY_CREDENTIALS = "docker-credentials-id"  
+        DEPLOY_SERVER = "user@your-server.com"  
         DEPLOY_PATH = "/path/to/deployment/directory"
-        REPOSITORY = "sibisam2301"
-        GIT_URL = "https://github.com/sibilucky/jenkinsdocker.git"
     }
 
-    stages {
+   stages {
         stage('Checkout Code') {
             steps {
-                script {
-                    sh "echo 'nameserver 8.8.8.8' | sudo tee -a /etc/resolv.conf"
-                    retry(3) {
-                        sh 'ping github.com'
-                        git 'https://github.com/sibilucky/jenkinsdocker.git'
-                    }
-                }
+                checkout([$class: 'GitSCM', 
+                          branches: [[name: '*/main']], 
+                          userRemoteConfigs: [[url: 'https://github.com/sibilucky/node.git', credentialsId: 'my-git-credentials']]])
             }
         }
-
+    }
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Building the Docker image..."
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    // Build the Docker image from the Dockerfile in your repo
+                    sh 'docker build -t my-alpine-web-server .'
                 }
             }
         }
@@ -36,8 +30,8 @@ pipeline {
         stage('Run Docker Container for Testing') {
             steps {
                 script {
-                    echo "Running Docker container for testing..."
-                    sh "docker run -d -p 8080:80 --name test-container ${DOCKER_IMAGE}"
+                    // Run the container (e.g., for tests, linting, etc.)
+                    sh 'docker run -d -p 8080:80 my-alpine-web-server'
                 }
             }
         }
@@ -45,12 +39,14 @@ pipeline {
         stage('Push Docker Image to Registry') {
             steps {
                 script {
-                    echo "Pushing Docker image to registry..."
+                    // Log in to Docker registry
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${REGISTRY}"
+                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS ${REGISTRY}'
                     }
-                    sh "docker tag ${DOCKER_IMAGE} ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest"
-                    sh "docker push ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest"
+
+                    // Tag and push the Docker image
+                    sh 'docker tag my-alpine-web-server sibisam2301/my-alpine-web-server:latest'
+                    sh 'docker push sibisam2301/my-alpine-web-server:latest'
                 }
             }
         }
@@ -58,35 +54,24 @@ pipeline {
         stage('Deploy to Server') {
             steps {
                 script {
-                    echo "Deploying Docker image to the server..."
-                    sshagent(credentials: ['your-ssh-credentials-id']) {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
-                                docker pull ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest &&
-                                docker stop ${DOCKER_IMAGE} || true &&
-                                docker rm ${DOCKER_IMAGE} || true &&
-                                docker run -d --name ${DOCKER_IMAGE} -p 80:80 ${REGISTRY}/${REPOSITORY}/${DOCKER_IMAGE}:latest
-                            "
-                        """
-                    }
-                    sh "curl --max-time 30 --fail http://${DEPLOY_SERVER}:80 || exit 1"
+                    // SSH into the deployment server and restart the Docker container
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
+                            docker pull sibisam2301/my-alpine-web-server:latest &&
+                            docker stop my-alpine-web-server || true &&
+                            docker rm my-alpine-web-server || true &&
+                            docker run -d --name my-alpine-web-server -p 80:80 sibisam2301/my-alpine-web-server:latest
+                        "
+                    """
                 }
             }
         }
     }
-
+    
     post {
         always {
-            script {
-                echo "Cleaning up Docker resources..."
-                sh 'docker system prune -f --volumes'
-            }
-        }
-        success {
-            echo "Pipeline completed successfully!"
-        }
-        failure {
-            echo "Pipeline failed. Please check the logs for errors."
+            // Cleanup Docker images after pipeline finishes
+            sh 'docker system prune -f'
         }
     }
 }
