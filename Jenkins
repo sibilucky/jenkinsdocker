@@ -20,7 +20,7 @@ pipeline {
                         // Check if GitHub is reachable before cloning
                         sh 'nslookup github.com'
                         // Clone the code from GitHub repository
-                        git "${GIT_URL}"
+                        git "${https://github.com/sibilucky/jenkinsdocker.git}"
                     }
                 }
             }
