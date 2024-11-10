@@ -54,7 +54,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
                         sh '''
-                            docker login -u $DOCKER_USER -p $DOCKER_PASS $REGISTRY --quiet
+                            docker login -u $DOCKER_USER -p $DOCKER_PASS $REGISTRY
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
