@@ -25,6 +25,11 @@ pipeline {
                 script {
                     echo 'Building Docker image...'
                     dockerImage = docker.build("${DOCKER_IMAGE}:latest", ".")
+                    sh 'docker images'
+                    def imageExists = sh(script: "docker images -q ${DOCKER_IMAGE}:latest", returnStatus: true) == 0
+                    if (!imageExists) {
+                        error "Docker image build failed"
+                    }
                 }
             }
         }
@@ -53,8 +58,11 @@ pipeline {
                     echo 'Pushing Docker image to registry...'
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'sibisam2301', passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
+                        def loginStatus = sh(script: "echo $DOCKER_PASS | docker login -u sibisam2301 --password-stdin $REGISTRY", returnStatus: true)
+                        if (loginStatus != 0) {
+                            error "Docker login failed"
+                        }
                         sh '''
-                            echo $DOCKER_PASS | docker login -u sibisam2301 --password-stdin $REGISTRY
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
