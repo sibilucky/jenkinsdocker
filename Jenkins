@@ -47,46 +47,53 @@ pipeline {
             }
         }
 
-          stage('Push Docker Image to Registry') {
+     stages {
+        stage('Push Docker Image to Registry') {
             steps {
-              script {
-            echo 'Pushing Docker image to registry...'
+                script {
+                    echo 'Pushing Docker image to registry...'
+                    
+                    // Using credentials to log in to Docker registry
+                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", 
+                                                      usernameVariable: 'DOCKER_USERNAME', 
+                                                      passwordVariable: 'DOCKER_PASSWORD')]) {
 
-            // Correctly retrieve username and password (dckr_pat_tHcAtDikyhGScV7ulEH439zwMUM)
-            withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", 
-                                              usernameVariable: 'DOCKER_USERNAME', 
-                                              passwordVariable: 'DOCKER_PASSWORD')]) {
-
-                echo "Logging into Docker registry ${REGISTRY}..."
-                // Docker login using credentials securely passed from Jenkins
-                sh '''
-                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $REGISTRY
-                    docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                    docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                '''
+                        echo "Logging into Docker registry ${REGISTRY}..."
+                        
+                        // Docker login using the injected credentials
+                        sh '''
+                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $REGISTRY
+                            docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                            docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
 
         stage('Deploy to Server') {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
-                    sh """
-                        set -x;
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
-                            docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
-                            docker stop my-alpine-web-server || true && 
-                            docker rm my-alpine-web-server || true && 
-                            docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                        '
-                    """
+
+                    // Using SSH to deploy the container
+                    withCredentials([sshUserPrivateKey(credentialsId: 'server-ssh-credentials', 
+                                                       keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            set -x;
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY ${DEPLOY_SERVER} '
+                                docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
+                                docker stop my-alpine-web-server || true && 
+                                docker rm my-alpine-web-server || true && 
+                                docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                            '
+                        """
+                    }
                 }
             }
         }
     }
+}
 
     post {
         always {
