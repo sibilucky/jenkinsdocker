@@ -75,23 +75,21 @@ pipeline {
                 script {
                     echo 'Deploying Docker container to the server...'
 
-                    // Using SSH to deploy the container
-                    withCredentials([sshUserPrivateKey(credentialsId: 'server-ssh-credentials', 
-                                                       keyFileVariable: 'SSH_KEY')]) {
-                        sh """
-                            set -x;
-                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY ${DEPLOY_SERVER} '
-                                docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
-                                docker stop my-alpine-web-server || true && 
-                                docker rm my-alpine-web-server || true && 
-                                docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                            '
-                        """
+                      ssh -i $SSH_KEY ${DEPLOY_SERVER} '
+                        echo "Pulling Docker image..."; 
+                        docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
+                         echo "Stopping existing container..."; 
+                        docker stop my-alpine-web-server || true && 
+                          echo "Removing existing container..."; 
+                        docker rm my-alpine-web-server || true && 
+                            echo "Running new container..."; 
+                          docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+'
+
                     }
                 }
             }
         }
-    }
 
     post {
         always {
