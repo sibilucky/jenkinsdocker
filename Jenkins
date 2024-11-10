@@ -1,11 +1,11 @@
-pipeline {
+ipeline {
     agent any
 
     environment {
         DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
-        DEPLOY_SERVER = 
+        DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
@@ -61,7 +61,7 @@ pipeline {
                         
                         // Docker login using the injected credentials
                         sh '''
-                            docker login -u sibisam2301@gmail.com' -p 'devika@123'
+                            echo $devika@123 | docker login -u $sibisam2301@gmail.com --password-stdin $REGISTRY
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
