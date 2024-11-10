@@ -11,7 +11,6 @@ RUN mkdir -p /var/www/html
 COPY ./index.html /var/www/html/
 
 
-
 # Expose the default HTTP port
 EXPOSE 80
 
