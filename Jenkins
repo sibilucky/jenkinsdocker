@@ -47,7 +47,6 @@ pipeline {
             }
         }
 
-     stages {
         stage('Push Docker Image to Registry') {
             steps {
                 script {
@@ -93,7 +92,6 @@ pipeline {
             }
         }
     }
-}
 
     post {
         always {
