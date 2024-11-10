@@ -16,7 +16,6 @@ pipeline {
                 checkout([$class: 'GitSCM', 
                           branches: [[name: '*/main']], 
                           userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git', credentialsId: 'my-git-credentials']]])
-                sh 'ls -la'  // Verify the file structure in the workspace
             }
         }
 
@@ -42,7 +41,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8082:80 ${DOCKER_IMAGE}'
+                    sh 'docker run -d -p 8082:80 ${DOCKER_IMAGE}'
                 }
             }
         }
@@ -59,9 +58,8 @@ pipeline {
 
                         echo "Logging into Docker registry ${REGISTRY}..."
                         
-                        // Docker login using the injected credentials
                         sh '''
-                            docker login -u sibisam2301@gmail.com -p devika@123
+                            docker login -u sibisam2301@gmail.com-p devika@123
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
@@ -70,27 +68,30 @@ pipeline {
             }
         }
                   
-         stage('Deploy to Server') {
-             steps {
-             script {
-            echo 'Deploying Docker container to the server...'
+        stage('Deploy to Server') {
+            steps {
+                script {
+                    echo 'Deploying Docker container to the server...'
 
-            // Correct usage of environment variable
-            sh """
-                ssh -i ${env.SSH_KEY} ${DEPLOY_SERVER} '
-                    echo "Pulling Docker image...";
-                    docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest &&
-                    echo "Stopping existing container...";
-                    docker stop my-alpine-web-server || true &&
-                    echo "Removing existing container...";
-                    docker rm my-alpine-web-server || true &&
-                    echo "Running new container...";
-                    docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                '
-            """
+                    // Correct usage of environment variable for SSH key
+                    withCredentials([sshUserPrivateKey(credentialsId: 'your-ssh-credentials-id', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} '
+                                echo "Pulling Docker image...";
+                                docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest &&
+                                echo "Stopping existing container...";
+                                docker stop my-alpine-web-server || true &&
+                                echo "Removing existing container...";
+                                docker rm my-alpine-web-server || true &&
+                                echo "Running new container...";
+                                docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                            '
+                        """
+                    }
+                }
+            }
         }
     }
-}
 
     post {
         always {
@@ -104,5 +105,4 @@ pipeline {
             }
         }
     }
-}
 }
