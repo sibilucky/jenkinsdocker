@@ -53,11 +53,11 @@ pipeline {
                     echo 'Pushing Docker image to registry...'
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
-                        sh 'set -x; docker login -u $DOCKER_USER -p $DOCKER_PASS ${REGISTRY}'
+                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS $REGISTRY'
 
                         echo "Tagging and pushing Docker image..."
-                        sh 'set -x; docker tag ${DOCKER_IMAGE} ${REGISTRY}/sibisam2301/my-alpine-web-server:latest'
-                        sh 'set -x; docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest'
+                        sh 'docker tag ${DOCKER_IMAGE} ${REGISTRY}/sibisam2301/my-alpine-web-server:latest'
+                        sh 'docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest'
                     }
                 }
             }
@@ -84,7 +84,13 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker images...'
-            sh 'docker system prune -f'
+            script {
+                try {
+                    sh 'docker system prune -f'
+                } catch (Exception e) {
+                    echo "Docker cleanup failed: ${e.getMessage()}"
+                }
+            }
         }
     }
 }
