@@ -8,7 +8,7 @@ RUN apk update && apk add nginx
 RUN mkdir -p /var/www/html
 
 # Copy your custom HTML or web content into the server
-COPY ./html/index.html /var/www/html/
+COPY ./index.html /var/www/html/
 
 
 # Expose the default HTTP port
