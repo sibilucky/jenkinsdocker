@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
+        DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
@@ -15,6 +16,7 @@ pipeline {
                 checkout([$class: 'GitSCM', 
                           branches: [[name: '*/main']], 
                           userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git', credentialsId: 'my-git-credentials']]])
+                sh 'ls -la'  // Verify the file structure in the workspace
             }
         }
 
@@ -40,7 +42,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'docker run -d -p 8082:80 ${DOCKER_IMAGE}'
+                    sh 'set -x; docker run -d -p 8082:80 ${DOCKER_IMAGE}'
                 }
             }
         }
@@ -57,8 +59,9 @@ pipeline {
 
                         echo "Logging into Docker registry ${REGISTRY}..."
                         
+                        // Docker login using the injected credentials
                         sh '''
-                            docker login -u sibisam2301@gmail.com -p devika@123
+                            docker login -u sibisam2301@gmail.com' -p 'devika@123'
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
@@ -66,8 +69,29 @@ pipeline {
                 }
             }
         }
-                  
-    
+
+        stage('Deploy to Server') {
+            steps {
+                script {
+                    echo 'Deploying Docker container to the server...'
+
+                    // Using SSH to deploy the container
+                    withCredentials([sshUserPrivateKey(credentialsId: 'server-ssh-credentials', 
+                                                       keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            set -x;
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY ${DEPLOY_SERVER} '
+                                docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
+                                docker stop my-alpine-web-server || true && 
+                                docker rm my-alpine-web-server || true && 
+                                docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                            '
+                        """
+                    }
+                }
+            }
+        }
+    }
 
     post {
         always {
@@ -81,5 +105,4 @@ pipeline {
             }
         }
     }
-}
 }
