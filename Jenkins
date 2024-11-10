@@ -69,27 +69,28 @@ pipeline {
                 }
             }
         }
-                   stage('Deploy to Server') {
-            steps {
-                script {
-                    echo 'Deploying Docker container to the server...'
+                  
+         stage('Deploy to Server') {
+             steps {
+             script {
+            echo 'Deploying Docker container to the server...'
 
-                      ssh -i $SSH_KEY ${DEPLOY_SERVER} '
-                        echo "Pulling Docker image..."; 
-                        docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
-                         echo "Stopping existing container..."; 
-                        docker stop my-alpine-web-server || true && 
-                          echo "Removing existing container..."; 
-                        docker rm my-alpine-web-server || true && 
-                            echo "Running new container..."; 
-                          docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-'
-
-                    }
-                }
-            }
+            // Correct usage of environment variable
+            sh """
+                ssh -i ${env.SSH_KEY} ${DEPLOY_SERVER} '
+                    echo "Pulling Docker image...";
+                    docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest &&
+                    echo "Stopping existing container...";
+                    docker stop my-alpine-web-server || true &&
+                    echo "Removing existing container...";
+                    docker rm my-alpine-web-server || true &&
+                    echo "Running new container...";
+                    docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                '
+            """
         }
-        
+    }
+}
 
     post {
         always {
