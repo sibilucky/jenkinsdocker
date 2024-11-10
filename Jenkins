@@ -16,6 +16,7 @@ pipeline {
                 checkout([$class: 'GitSCM', 
                           branches: [[name: '*/main']], 
                           userRemoteConfigs: [[url: 'https://github.com/sibilucky/jenkinsdocker.git', credentialsId: 'my-git-credentials']]])
+                sh 'ls -la'  // Verify the file structure in the workspace
             }
         }
 
