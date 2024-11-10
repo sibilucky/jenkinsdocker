@@ -48,6 +48,10 @@ pipeline {
                 script {
                     echo 'Running Docker container for testing...'
                     sh 'set -x; docker run -d -p 8082:80 ${DOCKER_IMAGE}'
+                    def runStatus = sh(script: "docker ps -q -f name=${DOCKER_IMAGE}", returnStatus: true)
+                    if (runStatus != 0) {
+                        error "Docker container failed to start"
+                    }
                 }
             }
         }
@@ -56,9 +60,9 @@ pipeline {
             steps {
                 script {
                     echo 'Pushing Docker image to registry...'
-                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'sibisam2301', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'sibisam2301', passwordVariable: 'CQT6XS0Y46WZ1')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
-                        def loginStatus = sh(script: "echo $DOCKER_PASS | docker login -u sibisam2301 --password-stdin $REGISTRY", returnStatus: true)
+                        def loginStatus = sh(script: "echo CQT6XS0Y46WZ1 | docker login -u sibisam2301--password-stdin $REGISTRY", returnStatus: true)
                         if (loginStatus != 0) {
                             error "Docker login failed"
                         }
@@ -78,9 +82,9 @@ pipeline {
                     sh """
                         set -x;
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
-                            docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
-                            docker stop my-alpine-web-server || true && 
-                            docker rm my-alpine-web-server || true && 
+                            docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest &&
+                            docker stop my-alpine-web-server || true &&
+                            docker rm my-alpine-web-server || true &&
                             docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '
                     """
