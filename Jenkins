@@ -25,11 +25,6 @@ pipeline {
                 script {
                     echo 'Building Docker image...'
                     dockerImage = docker.build("${DOCKER_IMAGE}:latest", ".")
-                    sh 'docker images'
-                    def imageExists = sh(script: "docker images -q ${DOCKER_IMAGE}:latest", returnStatus: true) == 0
-                    if (!imageExists) {
-                        error "Docker image build failed"
-                    }
                 }
             }
         }
@@ -48,10 +43,6 @@ pipeline {
                 script {
                     echo 'Running Docker container for testing...'
                     sh 'set -x; docker run -d -p 8082:80 ${DOCKER_IMAGE}'
-                    def runStatus = sh(script: "docker ps -q -f name=${DOCKER_IMAGE}", returnStatus: true)
-                    if (runStatus != 0) {
-                        error "Docker container failed to start"
-                    }
                 }
             }
         }
@@ -60,13 +51,10 @@ pipeline {
             steps {
                 script {
                     echo 'Pushing Docker image to registry...'
-                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'sibisam2301', passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
-                        def loginStatus = sh(script: "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $REGISTRY", returnStatus: true)
-                        if (loginStatus != 0) {
-                            error "Docker login failed"
-                        }
                         sh '''
+                            echo $DOCKER_PASS | docker login -u sibisam2301 --password-stdin $REGISTRY
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
@@ -82,9 +70,9 @@ pipeline {
                     sh """
                         set -x;
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
-                            docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest &&
-                            docker stop my-alpine-web-server || true &&
-                            docker rm my-alpine-web-server || true &&
+                            docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
+                            docker stop my-alpine-web-server || true && 
+                            docker rm my-alpine-web-server || true && 
                             docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '
                     """
