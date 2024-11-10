@@ -47,21 +47,24 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image to Registry') {
+         stage('Push Docker Image to Registry') {
             steps {
                 script {
-                    echo 'Pushing Docker image to registry...'
-                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'sibisam2301', passwordVariable: 'EVSQBSVFBCA2S2OECVUVLAQDIDM5VS3N')]) {
-                        echo "Logging into Docker registry ${REGISTRY}..."
-                        sh '''
-                            echo EVSQBSVFBCA2S2OECVUVLAQDIDM5VS3N | docker login -u sibisam2301 --password-stdin $REGISTRY
-                            docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                            docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                        '''
-                    }
-                }
+                   echo 'Pushing Docker image to registry...'
+                   withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", 
+                                              usernameVariable: 'sibisam2301', 
+                                              passwordVariable: '')]) {
+                  echo "Logging into Docker registry ${REGISTRY}..."
+                   sh '''
+                    echo $dckr_pat_tHcAtDikyhGScV7ulEH439zwMUM| docker login -u $sibisam --password-stdin
+                    docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                    docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                '''
             }
         }
+    }
+}
+
 
         stage('Deploy to Server') {
             steps {
