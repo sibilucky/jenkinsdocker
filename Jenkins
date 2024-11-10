@@ -54,14 +54,14 @@ pipeline {
                     
                     // Using credentials to log in to Docker registry
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", 
-                                                      usernameVariable: 'DOCKER_USERNAME', 
-                                                      passwordVariable: 'DOCKER_PASSWORD')]) {
+                                                      usernameVariable: 'sibisam2301@gmail.com', 
+                                                      passwordVariable: 'devika@123')]) {
 
                         echo "Logging into Docker registry ${REGISTRY}..."
                         
                         // Docker login using the injected credentials
                         sh '''
-                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $REGISTRY
+                            echo $devika@123 | docker login -u $sibisam2301@gmail.com --password-stdin $REGISTRY
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
