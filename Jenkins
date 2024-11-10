@@ -59,7 +59,7 @@ pipeline {
                         echo "Logging into Docker registry ${REGISTRY}..."
                         
                         sh '''
-                            docker login -u sibisam2301@gmail.com-p devika@123
+                            docker login -u sibisam2301@gmail.com -p devika@123
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
