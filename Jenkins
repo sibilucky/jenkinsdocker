@@ -23,8 +23,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building Docker image...'
-                    def myAlpineWebServer = 'my-alpine-web-server'
-                    dockerImage = docker.build("${myAlpineWebServer}:latest")
+                    dockerImage = docker.build("${DOCKER_IMAGE}:latest", ".")
                 }
             }
         }
@@ -33,7 +32,7 @@ pipeline {
             steps {
                 script {
                     echo 'Checking Docker version...'
-                    sh 'docker --version'  // Verifies if Docker is available
+                    sh 'docker --version'
                 }
             }
         }
@@ -42,7 +41,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8080:80 ${my-alpine-web-server}'
+                    sh 'set -x; docker run -d -p 8080:80 ${DOCKER_IMAGE}'
                 }
             }
         }
@@ -53,11 +52,11 @@ pipeline {
                     echo 'Pushing Docker image to registry...'
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
-                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS $REGISTRY'
-
-                        echo "Tagging and pushing Docker image..."
-                        sh 'docker tag ${DOCKER_IMAGE} ${REGISTRY}/sibisam2301/my-alpine-web-server:latest'
-                        sh 'docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest'
+                        sh '''
+                            docker login -u $DOCKER_USER -p $DOCKER_PASS $REGISTRY
+                            docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                            docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                        '''
                     }
                 }
             }
@@ -69,12 +68,12 @@ pipeline {
                     echo 'Deploying Docker container to the server...'
                     sh """
                         set -x;
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
                             docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && 
                             docker stop my-alpine-web-server || true && 
                             docker rm my-alpine-web-server || true && 
                             docker run -d --name my-alpine-web-server -p 80:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                        "
+                        '
                     """
                 }
             }
