@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
-        DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
 
@@ -68,30 +67,7 @@ pipeline {
             }
         }
                   
-        stage('Deploy to Server') {
-            steps {
-                script {
-                    echo 'Deploying Docker container to the server...'
-
-                    // Correct usage of environment variable for SSH key
-                    withCredentials([sshUserPrivateKey(credentialsId: 'your-ssh-credentials-id', keyFileVariable: 'SSH_KEY')]) {
-                        sh """
-                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} '
-                                echo "Pulling Docker image...";
-                                docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest &&
-                                echo "Stopping existing container...";
-                                docker stop my-alpine-web-server || true &&
-                                echo "Removing existing container...";
-                                docker rm my-alpine-web-server || true &&
-                                echo "Running new container...";
-                                docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                            '
-                        """
-                    }
-                }
-            }
-        }
-    }
+    
 
     post {
         always {
