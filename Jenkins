@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8086:80 ${DOCKER_IMAGE}'
+                    sh 'set -x; docker run -d -p 8087:80 ${DOCKER_IMAGE}'
                    
                 }
             }
@@ -64,18 +64,17 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
-                    withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-credentials', keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u -sibisam2301@gmail.com -p devika@123 ${REGISTRY}"
                             ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
                                                                docker stop my-alpine-web-server || true && \
                                                                docker rm my-alpine-web-server || true && \
-                                                               docker run -d --name my-alpine-web-server -p 8086:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
+                                                               docker run -d --name my-alpine-web-server -p 8087:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
                         """
                     }
                 }
             }
-        }
+        
     }
 
     post {
