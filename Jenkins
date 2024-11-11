@@ -43,6 +43,8 @@ pipeline {
                 script {
                     echo 'Running Docker container for testing...'
                     sh 'set -x; docker run -d -p 8081:80 ${DOCKER_IMAGE}'
+                    echo 'Testing if container is running...'
+                    sh 'curl --fail http://localhost:8081 || exit 1'
                 }
             }
         }
@@ -51,15 +53,11 @@ pipeline {
             steps {
                 script {
                     echo 'Pushing Docker image to registry...'
-                    
-                    // Using credentials to log in to Docker registry
-                    withCredentials([usernamePassword(credentialsId: 'docker-credentials-id',
+
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', 
                                                       usernameVariable: 'sibisam2301@gmail.com', 
                                                       passwordVariable: 'devika@123')]) {
-
                         echo "Logging into Docker registry ${REGISTRY}..."
-                        
-                        // Docker login using the injected credentials
                         sh '''
                             docker login -u  sibisam2301@gmail.com -p devika@123
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
@@ -74,16 +72,17 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
-                    withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                          sh '''
-                        docker login -u  sibisam2301@gmail.com -p devika@123 ${REGISTRY}
-                         docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
-                            docker stop my-alpine-web-server || true && \
-                           docker rm my-alpine-web-server || true && \
-                          docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                             '''
-                      }
-
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', 
+                                                      usernameVariable: 'sibisam2301@gmail.com', 
+                                                      passwordVariable: 'devika@123')]) {
+                        sh '''
+                            ssh ${DEPLOY_SERVER} "docker login -u  sibisam2301@gmail.com-p devika@123 ${REGISTRY}"
+                            ssh ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
+                                                 docker stop my-alpine-web-server || true && \
+                                                 docker rm my-alpine-web-server || true && \
+                                                 docker run -d --name my-alpine-web-server -p 8082:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
+                        '''
+                    }
                 }
             }
         }
