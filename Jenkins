@@ -1,7 +1,6 @@
-
 pipeline {
 
-    environment {
+ environment {
         DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
