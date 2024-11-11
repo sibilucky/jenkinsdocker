@@ -42,9 +42,9 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8084:80 ${DOCKER_IMAGE}'
+                    sh 'set -x; docker run -d -p 8085:80 ${DOCKER_IMAGE}'
                     echo 'Testing if container is running...'
-                    sh 'curl --fail http://localhost:8084|| exit 1'
+                    sh 'curl --fail http://localhost:8085|| exit 1'
                 }
             }
         }
@@ -80,7 +80,7 @@ pipeline {
                             ssh ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
                                                  docker stop my-alpine-web-server || true && \
                                                  docker rm my-alpine-web-server || true && \
-                                                 docker run -d --name my-alpine-web-server -p 8084:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
+                                                 docker run -d --name my-alpine-web-server -p 8085:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
                         '''
                     }
                 }
