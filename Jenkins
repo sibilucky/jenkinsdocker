@@ -53,7 +53,7 @@ pipeline {
                     echo 'Pushing Docker image to registry...'
                     
                     // Using credentials to log in to Docker registry
-                    withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", 
+                    withCredentials([usernamePassword(credentialsId: "${my-registry-credentials", 
                                                       usernameVariable: 'sibisam2301@gmail.com', 
                                                       passwordVariable: 'devika@123')]) {
 
