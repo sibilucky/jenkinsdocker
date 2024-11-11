@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8083:80 ${DOCKER_IMAGE}'
+                    sh 'set -x; docker run -d -p 8085:80 ${DOCKER_IMAGE}'
                 }
             }
         }
@@ -76,11 +76,11 @@ pipeline {
                     echo 'Deploying Docker container to the server...'
                     withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                           sh '''
-                        echod evika@123 | docker login -u  sibisam2301@gmail.com --password-stdin ${REGISTRY}}
+                        docker login -u  sibisam2301@gmail.com -p devika@123 ${REGISTRY}}
                          docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
                             docker stop my-alpine-web-server || true && \
                            docker rm my-alpine-web-server || true && \
-                          docker run -d --name my-alpine-web-server -p 8084:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
+                          docker run -d --name my-alpine-web-server -p 8086:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                              '''
                       }
 
