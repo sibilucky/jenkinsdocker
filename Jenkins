@@ -1,13 +1,4 @@
 pipeline {
-g Docker image...'
-                    dockerImage = docker.build("${DOCKER_IMAGE}:latest", ".")
-                }
-            }
-        }
-
-        stage('Verify Docker Installation') {
-            steps {
-                script {    agent any
 
     environment {
         DOCKER_IMAGE = "my-alpine-web-server"
