@@ -76,7 +76,7 @@ pipeline {
                                                       usernameVariable: 'sibisam2301@gmail.com', 
                                                       passwordVariable: 'devika@123')]) {
                         sh '''
-                            ssh ${DEPLOY_SERVER} "docker login -u  sibisam2301@gmail.com-p devika@123 ${REGISTRY}"
+                            ssh ${DEPLOY_SERVER} "docker login -u  sibisam2301@gmail.com -p devika@123 ${REGISTRY}"
                             ssh ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
                                                  docker stop my-alpine-web-server || true && \
                                                  docker rm my-alpine-web-server || true && \
