@@ -1,12 +1,13 @@
 pipeline {
 
- environment {
+    environment {
         DOCKER_IMAGE = "my-alpine-web-server"
         REGISTRY = "docker.io"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
         DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
     }
+
 
     stages {
         stage('Checkout Code') {
