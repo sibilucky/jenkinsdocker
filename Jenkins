@@ -1,3 +1,4 @@
+
 pipeline {
 
     environment {
@@ -22,9 +23,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo 'Buildin
+                    echo 'Building Docker image...'
                     echo 'Checking Docker version...'
                     sh 'docker --version'
+                    sh 'docker build -t ${DOCKER_IMAGE} .'  // Add Docker build command
                 }
             }
         }
@@ -35,7 +37,7 @@ pipeline {
                     echo 'Running Docker container for testing...'
                     sh 'set -x; docker run -d -p 8086:80 ${DOCKER_IMAGE}'
                     echo 'Testing if container is running...'
-                    sh 'curl --fail http://localhost:8086
+                    sh 'curl --fail http://localhost:8086 || exit 1'
                 }
             }
         }
@@ -50,7 +52,7 @@ pipeline {
                                                       passwordVariable: 'devika@123')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
                         sh '''
-                            docker login -u  sibisam2301@gmail.com -p devika@123
+                            docker login -u -sibisam2301@gmail.com -p devika@123
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
@@ -63,16 +65,14 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
-                    withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', 
-                                                      usernameVariable: 'sibisam2301@gmail.com', 
-                                                      passwordVariable: 'devika@123')]) {
-                        sh '''
-                            ssh ${DEPLOY_SERVER} "docker login -u  sibisam2301@gmail.com -p devika@123 ${REGISTRY}"
-                            ssh ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
-                                                 docker stop my-alpine-web-server || true && \
-                                                 docker rm my-alpine-web-server || true && \
-                                                 docker run -d --name my-alpine-web-server -p 8086:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
-                        '''
+                    withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-credentials', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u  sibisam2301@gmail.com-p  devika@123 ${REGISTRY}"
+                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
+                                                               docker stop my-alpine-web-server || true && \
+                                                               docker rm my-alpine-web-server || true && \
+                                                               docker run -d --name my-alpine-web-server -p 8086:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
+                        """
                     }
                 }
             }
@@ -84,7 +84,7 @@ pipeline {
             echo 'Cleaning up Docker images...'
             script {
                 try {
-                    sh 'docker system prune -f'
+                    sh 'docker system prune -af'  // Cleanup Docker images
                 } catch (Exception e) {
                     echo "Docker cleanup failed: ${e.getMessage()}"
                 }
