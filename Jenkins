@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "my-alpine-web-server"
-        REGISTRY = "docker.io/sibisam2301"
+        REGISTRY = "docker.io/sibisam2301@gmail.com"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
         DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
