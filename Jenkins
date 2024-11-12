@@ -7,7 +7,6 @@ pipeline {
         REGISTRY_CREDENTIALS = "docker-credentials-id"
         DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
-         SSH_KEY = credentials('ssh-key-id') 
     }
 
     stages {
