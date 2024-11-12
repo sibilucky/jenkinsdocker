@@ -24,8 +24,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building Docker image...'
-                    echo 'Checking Docker version...'
-                    sh 'docker --version'
+                    sh 'docker --version'  // Docker version for debugging
                     sh 'docker build -t ${DOCKER_IMAGE} .'  // Add Docker build command
                 }
             }
@@ -35,8 +34,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running Docker container for testing...'
-                    sh 'set -x; docker run -d -p 8087:80 ${DOCKER_IMAGE}'
-                   
+                    sh 'docker run -d -p 8087:80 ${DOCKER_IMAGE}'
                 }
             }
         }
@@ -44,14 +42,12 @@ pipeline {
         stage('Push Docker Image to Registry') {
             steps {
                 script {
-                    echo 'Pushing Docker image to registry...'
-
                     withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', 
                                                       usernameVariable: 'sibisam2301@gmail.com', 
                                                       passwordVariable: 'devika@123')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
                         sh '''
-                            docker login -u  sibisam2301@gmail.com -p devika@123
+                            docker login -u sibisam2301@gmail.com -p devika@123
                             docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                             docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
                         '''
@@ -64,17 +60,16 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
-                        sh """
-                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u -sibisam2301@gmail.com -p devika@123 ${REGISTRY}"
-                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
-                                                               docker stop my-alpine-web-server || true && \
-                                                               docker rm my-alpine-web-server || true && \
-                                                               docker run -d --name my-alpine-web-server -p 8087:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
-                        """
-                    }
+                    sh """
+                        ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u sibisam2301@gmail.com -p devika@123 ${REGISTRY}"
+                        ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
+                                                           docker stop my-alpine-web-server || true && \
+                                                           docker rm my-alpine-web-server || true && \
+                                                           docker run -d --name my-alpine-web-server -p 8087:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
+                    """
                 }
             }
-        
+        }
     }
 
     post {
@@ -90,4 +85,3 @@ pipeline {
         }
     }
 }
-
