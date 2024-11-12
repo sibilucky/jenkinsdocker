@@ -67,6 +67,7 @@ pipeline {
                                                            docker rm my-alpine-web-server || true && \
                                                            docker run -d --name my-alpine-web-server -p 8087:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
                     """
+                            echo 'Application is now running at: http://<your-server-ip>:8088'
                 }
             }
         }
