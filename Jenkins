@@ -3,10 +3,11 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "my-alpine-web-server"
-        REGISTRY = "docker.io"
+        REGISTRY = "docker.io/sibisam2301"
         REGISTRY_CREDENTIALS = "docker-credentials-id"
         DEPLOY_SERVER = "user@your-server.com"
         DEPLOY_PATH = "/path/to/deployment/directory"
+        SSH_KEY = "path/to/ssh/key"
     }
 
     stages {
@@ -46,27 +47,32 @@ pipeline {
                                                       usernameVariable: 'sibisam2301@gmail.com', 
                                                       passwordVariable: 'devika@123')]) {
                         echo "Logging into Docker registry ${REGISTRY}..."
-                        sh '''
-                            docker login -u sibisam2301@gmail.com -p devika@123
-                            docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                            docker push ${REGISTRY}/sibisam2301/my-alpine-web-server:latest
-                        '''
+                        sh """
+                            echo  devika@123 | docker login -u sibisam2301@gmail.com --password-stdin
+                            docker tag ${DOCKER_IMAGE}:latest ${REGISTRY}/${DOCKER_IMAGE}:latest
+                            docker push ${REGISTRY}/${DOCKER_IMAGE}:latest
+                        """
                     }
                 }
             }
         }
 
-       stage('Deploy to Server') {
+        stage('Deploy to Server') {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
-                    sh """
-                        ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u sibisam2301@gmail.com -p  devika@123 ${REGISTRY}"
-                        ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
-                                                           docker stop my-alpine-web-server || true && \
-                                                           docker rm my-alpine-web-server || true && \
-                                                           docker run -d --name my-alpine-web-server -p 8089:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'docker-credentials-id', 
+                                                      usernameVariable: sibisam2301@gmail.com'', 
+                                                      passwordVariable: 'devika@123'),
+                                     file(credentialsId: 'ssh-key-credential-id', variable: 'SSH_KEY')]) {
+                        sh """
+                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "echo 'devika@123' | docker login -u sibisam2301@gmail.com --password-stdin ${REGISTRY}"
+                            ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/${DOCKER_IMAGE}:latest && \
+                                                                docker stop my-alpine-web-server || true && \
+                                                                docker rm my-alpine-web-server || true && \
+                                                                docker run -d --name my-alpine-web-server -p 8089:80 ${REGISTRY}/${DOCKER_IMAGE}:latest"
+                        """
+                    }
                     echo 'Application is now running at: http://<your-server-ip>:8089'  // Ensure correct port
                 }
             }
