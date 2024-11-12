@@ -56,18 +56,18 @@ pipeline {
             }
         }
 
-        stage('Deploy to Server') {
+       stage('Deploy to Server') {
             steps {
                 script {
                     echo 'Deploying Docker container to the server...'
                     sh """
-                        ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u sibisam2301@gmail.com -p devika@123 ${REGISTRY}"
+                        ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker login -u \sibisam2301@gmail.com -p \devika@123 ${REGISTRY}"
                         ssh -i ${SSH_KEY} ${DEPLOY_SERVER} "docker pull ${REGISTRY}/sibisam2301/my-alpine-web-server:latest && \
                                                            docker stop my-alpine-web-server || true && \
                                                            docker rm my-alpine-web-server || true && \
-                                                           docker run -d --name my-alpine-web-server -p 8087:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
+                                                           docker run -d --name my-alpine-web-server -p 8088:80 ${REGISTRY}/sibisam2301/my-alpine-web-server:latest"
                     """
-                            echo 'Application is now running at: http://<your-server-ip>:8088'
+                    echo 'Application is now running at: http://<your-server-ip>:8088'  // Ensure correct port
                 }
             }
         }
