@@ -1,18 +1,15 @@
-# Start with the official Alpine base image
+# Dockerfile
 FROM alpine:latest
 
-# Install Nginx
-RUN apk update && apk add nginx
+# Install any necessary packages (e.g., for a web server or runtime)
+RUN apk add --no-cache python3 py3-pip
 
-# Create a directory for the server's content
-RUN mkdir -p /var/www/html
+# Copy application files (adjust this as needed)
+WORKDIR /app
+COPY . /app
 
-# Copy your custom HTML or web content into the server
-COPY ./index.html /var/www/html/
+# Install any Python dependencies (if using Python)
+RUN pip3 install -r requirements.txt
 
-
-# Expose the default HTTP port
-EXPOSE 80
-
-# Run Nginx when the container starts
-CMD ["nginx", "-g", "daemon off;"]
+# Set the command to run your app (replace 'app.py' with your app's entry point)
+CMD ["python3", "app.py"]
