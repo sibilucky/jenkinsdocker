@@ -1,20 +1,18 @@
-FROM alpine:latest
+# Use a lightweight Alpine Linux image with Python
+FROM python:3.11-alpine
 
-# Install Python and pip
-RUN apk add --no-cache python3 py3-pip
-
-# Set up a working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the application code
+# Copy the local application code into the container
 COPY . /app
 
-# Create and activate a virtual environment
-RUN python3 -m venv venv
-RUN . venv/bin/activate && pip install -r requirements.txt
+# Install any dependencies (e.g., requirements.txt)
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Set the virtual environment as the default Python interpreter
-ENV PATH="/app/venv/bin:$PATH"
+# Expose the port your app will run on (e.g., Flask app default is 5000)
+EXPOSE 5000
 
-# Specify the command to run your app (replace 'app.py' with your entry point)
-CMD ["python3", "app.py"]
+# Command to run the app (replace with your app entry point)
+CMD ["python", "app.py"]
+
