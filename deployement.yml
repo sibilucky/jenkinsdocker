@@ -1,23 +1,9 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: flask-web-app # Replace with your app's name
-spec:
-  replicas: 2  # Number of pod replicas
-  selector:
-    matchLabels:
-      app: flask-web-app
-  template:
-    metadata:
-      labels:
-        app: flask-web-app
-    spec:
-      containers:
-        - name:  flask-web-app# Replace with your container's name
-          image: my-alpine-web-server:latest  # Replace with your image name
-          ports:
-                 - "5000:5000"  # Update to the port your app listens on
-          env:
-            - name: PATH
-              value: "/app/venv/bin:$PATH"
-          command: ["python3", "app.py"]  # Update to match your app's entry point
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_RUN_HOST=0.0.0.0
