@@ -1,18 +1,21 @@
-# Use a lightweight Alpine Linux image with Python
-FROM python:3.11-alpine
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
 
-# Set the working directory inside the container
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the local application code into the container
+# Copy the current directory contents into the container at /app
 COPY . /app
 
-# Install any dependencies (e.g., requirements.txt)
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port your app will run on (e.g., Flask app default is 5000)
+# Make port 5000 available to the world outside this container
 EXPOSE 5000
 
-# Command to run the app (replace with your app entry point)
-CMD ["python", "app.py"]
+# Define environment variable to allow Flask to run in production
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
+# Run app.py when the container launches
+CMD ["flask", "run"]
