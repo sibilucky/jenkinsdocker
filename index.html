@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpine.js + Python Web Page</title>
+    <!-- Include Alpine.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.9.8" defer></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="container mx-auto p-5" x-data="{ count: 0 }">
+        <h1 class="text-3xl font-bold mb-5">Alpine.js + Python Web Page</h1>
+        
+        <p class="text-xl mb-4">Current Count: <span x-text="count"></span></p>
+        
+        <button @click="count++" class="px-4 py-2 bg-blue-500 text-white rounded">Increment</button>
+        <button @click="count--" class="px-4 py-2 bg-red-500 text-white rounded ml-2">Decrement</button>
+    </div>
+
+</body>
+</html>
