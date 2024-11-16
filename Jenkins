@@ -62,7 +62,7 @@ pipeline {
                         docker pull ${REGISTRY}/flask-app:latest
                         docker stop flask-app || true
                         docker rm flask-app || true
-                        docker run -d --name my-alpine-web-server -p 5002:5000 ${REGISTRY}/flask-app:latest
+                        docker run -d --name my-flask-app -p 5002:5000 ${REGISTRY}/flask-app:latest
                     """
                 }
             }
