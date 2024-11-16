@@ -23,7 +23,7 @@ pipeline {
                 script {
                     echo 'Building Docker image...'
                     sh 'docker --version'  // Docker version for debugging
-                    sh 'docker build -t flask-app .'  // Add Docker build command
+                    sh 'docker build -t flask-app .'  
                 }
             }
         }
